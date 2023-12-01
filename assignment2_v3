@@ -108,15 +108,11 @@ def cat_encoding(ds):
         encoded_sequences.append(onehot_encoded_seq)
     
     # Create a DataFrame for the encoded sequences
-    encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0))
+    encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0), columns=['sequence'])
     # Concatenate the encoded sequences DataFrame with BPPM and target variable
     new_ds = pd.concat([encoded_sequences_df, ds[['BPPM', 'activity_level']]], axis=1)
     
     return new_ds
-
-
-# TODO: CONCAT TARGET ASWEL ??
-
 
     # # Concatenating the encoded sequences and BPPM features
     # processed_ds = pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
