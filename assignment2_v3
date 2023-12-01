@@ -106,7 +106,7 @@ def cat_encoding(ds):
         integer_encoded_seq = integer_encoded_seq.reshape(len(integer_encoded_seq), 1)
         onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
         encoded_sequences.append(onehot_encoded_seq)
-    
+    #ss
     # Create a DataFrame for the encoded sequences
     # encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0), columns=['sequence'])
     encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0))
