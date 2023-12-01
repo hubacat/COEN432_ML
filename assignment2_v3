@@ -92,13 +92,16 @@ def cat_encoding(ds):
     # # # ****** USING ONEHOTENCODER V2: ******
     sequences = ds['sequence']
     encoded_sequences = []
+    iteration = 0
     for sequence in sequences:
+        iteration += 1
+        print(iteration)
         sequence = np.array(list(sequence)) 
         #integer encode the sequence
         label_encoder = LabelEncoder()
         integer_encoded_seq = label_encoder.fit_transform(sequence) 
         #one hot the sequence
-        onehot_encoder = OneHotEncoder(sparse=False)
+        onehot_encoder = OneHotEncoder(sparse_output=False)
         #reshape because that's what OneHotEncoder likes
         integer_encoded_seq = integer_encoded_seq.reshape(len(integer_encoded_seq), 1)
         onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
