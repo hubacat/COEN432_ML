@@ -1,0 +1,133 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.metrics import accuracy_score
+
+# # Loading, tabulating, and creating a DataFrame with all the data in the program.
+# # TODO: Change filepath for easier implementation.
+# # with open('..\\A2_15000.txt', 'r') as file:
+# # gives the path of assignment2.py 
+# current_path = os.path.realpath(__file__)
+# # gives the directory where assigment2.py exists 
+# dir = os.path.dirname(current_path) 
+# #switches out Prediction-of-Ribozyme-Activity with 0_data in directory name
+# dir = dir.replace('Prediction-of-Ribozyme-Activity','0_data')
+# #change directory to directory with txt file
+# os.chdir(dir)
+# with open(dir, 'a') as file:
+
+# TODO: un-used.
+def scatter_plotting(df):
+    x = df['x']
+    y = df['y']
+
+    plt.scatter(x, y)
+    plt.title('Scatter Plot')
+    plt.xlabel('X-axis label')
+    plt.ylabel('Y-axis label')
+    plt.show()
+
+# Converting categorical data into numerical format:
+# Using One-hot encoding, the nucleotides 'A', 'G', 'C', and 'U' are converted into a binary vector.
+# Example:
+#     'A' -> [1, 0, 0, 0]
+#     'C' -> [0, 1, 0, 0]
+#     'G' -> [0, 0, 1, 0]
+#     'U' -> [0, 0, 0, 1] 
+# Each category gets its own column and only one of these columns is 'hot' (set to 1).
+# This increase the dimension immensly, that's why we'll need to remove some nucelotides that dont affect the model's accuracy.
+def cat_encoding(ds):
+    # Encoding RNA sequences to binary vectors.
+    encoder = OneHotEncoder(sparse=False)
+    sequences = ds['sequence'].apply(list)  # Convert strings to lists of nucleotides
+    encoded_sequences = encoder.fit_transform(sequences.apply(lambda x: [[i] for i in x]))
+    # Create the dataset for encoded RNA sequences (anothe rone will be made for the BPPM).
+    encoded_sequence_ds = pd.DataFrame(encoded_sequences, columns=encoder.get_feature_names())
+
+    # Remove splitting characters and transform String sequence to list array of floats
+    ds['BPPM'] = ds['BPPM'].str.replace("[", "", regex=True).str.replace("]", "", regex=True).str.replace("'", "", regex=True).str.replace(" ", "", regex=True)
+    ds['BPPM'] = ds['BPPM'].apply(lambda x: np.array([float(val) for val in x.split(',')]))
+
+    # Create the dataset for encoded BPPMS features.
+    bppm_ds = pd.DataFrame(ds['BPPM'].tolist(), columns=[f'BPPM_{i}' for i in range(60 * 60)])
+
+# columns = ['id', 'sequence', 'BPPM', 'activity_level']
+
+    # Concatenate and return the encoded sequence DataFrame with the BPPM matrix
+    return pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
+
+# TODO: CONCAT TARGET ASWEL ??
+
+
+    # # Concatenating the encoded sequences and BPPM features
+    # processed_ds = pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
+
+    # # Target variable
+    # target = ds['Target']
+
+    # # Splitting into train and test sets
+    # X_train, X_test, y_train, y_test = train_test_split(processed_ds, target, test_size=0.2, random_state=42)
+
+
+# def outliers_handling():
+
+# def dim_reduction():
+
+
+# def gaussian_noise():
+
+# TODO: Split following code sections in functions for readability, AND GIVE THEIR RESPECTIVE FUNCTION
+# the hyperparameters for easier usage of EA later.
+# ********************* IMPORTING DATA *******************
+with open(r'C:\Users\Windows\Documents\Education\Concordia\2023_Fall\COEN432_ML_&_EA\Assignmnet_2\0_data\A2_15000.txt', 'r') as file:
+    lines = file.readlines()
+data = [line.strip().split(';') for line in lines]
+columns = ['id', 'sequence', 'BPPM', 'activity_level']
+ds = pd.DataFrame(data, columns=columns)
+# Removing the ID column since it doesn't contain relevant information for our problem.
+ds.drop(columns='id', inplace=True)
+
+# ********************* PREPROCESSING ********************
+ds = cat_encoding(ds)
+
+# ********************* SPLITTING **********************
+# Split features and target.
+X = ds[['sequence', 'BPPM']]
+y = ds['activity_level']
+# Splitting the data into training and testing sets.
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# ********************* SCALLING ***********************
+# Feature scaling based on the reliance of KNN on distance metrics.
+# Scalling takes place after splitting the data to make sure trainning data isnt leaked in testing data.
+# For this we remove the mean value from each instances respective feature.
+# Target not scalled, since it might affect its the interpretability, and nature.
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)
+
+# ********************* TRAINING ***********************
+# Initializing the KNN model.
+# Test 1: Using default values for the KNeighborsClassifier Constructor (these are part of hyperparametization which will be used in EA).
+# n_neighbors   =5;
+# weight        ='uniform'
+# algorithm     ='auto'
+# p             =1          (Manhattan distance, p=2 is Euclidean distance)
+# n_jobs        =none          (# of parallel jobs to run for neighbors search; -1 means using all processors
+knn = KNeighborsClassifier(n_neighbors=5, weight='uniform', algorithm='auto', p=1, n_jobs='none')
+knn.fit(X_train_scaled, y_train)
+
+# ********************* TESTING ***********************
+# Predicting on the independent test dataset.
+y_pred = knn.predict(X_test_scaled)
+
+# ********************* EVALUATING ***********************
+# Evaluating the predictions with the actual target test data.
+accuracy = accuracy_score(y_test, y_pred)
+
+# ********************* DISPLAYING ***********************
+print(f"Accuracy of KNN: {accuracy:.2f}")
