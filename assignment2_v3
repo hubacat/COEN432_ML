@@ -1,3 +1,12 @@
+
+################################################
+#####   Specify packages to download    ########
+################################################
+
+#import functions
+#from importdata import *
+
+import os
 import array
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -10,17 +19,8 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 
 # # Loading, tabulating, and creating a DataFrame with all the data in the program.
-# # TODO: Change filepath for easier implementation.
-# # with open('..\\A2_15000.txt', 'r') as file:
-# # gives the path of assignment2.py 
-# current_path = os.path.realpath(__file__)
-# # gives the directory where assigment2.py exists 
-# dir = os.path.dirname(current_path) 
-# #switches out Prediction-of-Ribozyme-Activity with 0_data in directory name
-# dir = dir.replace('Prediction-of-Ribozyme-Activity','0_data')
-# #change directory to directory with txt file
-# os.chdir(dir)
-# with open(dir, 'a') as file:
+
+
 
 # TODO: un-used.
 def scatter_plotting(df):
@@ -32,8 +32,8 @@ def scatter_plotting(df):
     plt.xlabel('X-axis label')
     plt.ylabel('Y-axis label')
     plt.show()
-
-# Converting categorical data into numerical format:
+# Converting categorical data into numerical format: 
+#Other ways to encode categorically: one-hot encoding, label encoding, target encoding
 # Using One-hot encoding, the nucleotides 'A', 'G', 'C', and 'U' are converted into a binary vector.
 # Example:
 #     'A' -> [1, 0, 0, 0]
@@ -89,23 +89,82 @@ def cat_encoding(ds):
     # return df
 
     
-    # # # ****** USING ONEHOTENCODER V2: ******
-    sequences = ds['sequence']
-    encoded_sequences = []
-    iteration = 0
-    for sequence in sequences:
-        iteration += 1
-        print(iteration)
-        sequence = np.array(list(sequence)) 
-        #integer encode the sequence
-        label_encoder = LabelEncoder()
-        integer_encoded_seq = label_encoder.fit_transform(sequence) 
-        #one hot the sequence
-        onehot_encoder = OneHotEncoder(sparse_output=False)
-        #reshape because that's what OneHotEncoder likes
-        integer_encoded_seq = integer_encoded_seq.reshape(len(integer_encoded_seq), 1)
-        onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
-        encoded_sequences.append(onehot_encoded_seq)
+    ##############################          OneHotEncorder V3         ##############################
+    #https://medium.com/@creatorvision03/one-hot-encoding-a-comprehensive-guide-with-python-code-and-examples-for-effective-categorical-2fbbc111c320#:~:text=One%2Dhot%20encoding%20is%20a,process%20and%20interpret%20the%20information.
+   
+    #acquire the dataframe with the categorical variables
+    #data = ds['sequence']  #'data' holds only the sequences of all 15000 instaces
+    
+    #df = pd.DataFrame(data)
+    #initialize the encoder
+    #encoder = OneHotEncoder()
+
+    #Fit and transform the dataframe
+    #encoded_data = encoder.fit_transform(df[['sequence']])
+
+    #convert the encoded data to pandas datafram
+    #encoded_df = pd.DataFrame(encoded_data.toarray(), columns=encoder.get_feature_names_out(['sequence']))
+
+    #print encoded dataframe
+    #print(encoded_df)
+
+
+    #take data variable and iterate within it, so for loop to iterate within the one sequenece and then goes on to the next sequence
+
+    ##############################         OneHotEncorder V3         ##############################
+
+
+
+    ##############################         OneHotEncorder V4         ##############################
+
+    #data = ds['sequence']   
+    #print(str(data))
+
+    #cant convert to string
+
+    ds ['sequence_new'] = ds['sequence'].cat.codes
+
+    # Create an instance of One-hot-encoder 
+    encoder = OneHotEncoder() 
+
+    enc_data = pd.DataFrame(encoder.fit_transform(ds[['sequence_new']]).toarray())
+
+    new_df = data.join(enc_data)
+
+    print(new_df)
+
+
+
+
+
+    ##############################         OneHotEncorder V4         ##############################
+
+
+
+    ##############################      ****** USING ONEHOTENCODER V2: ******     ##############################
+   # sequences = ds['sequence']
+   # encoded_sequences = []
+   # iteration = 0
+   # for sequence in sequences:
+   #     iteration += 1
+   #     print(iteration)
+   #     sequence = np.array(list(sequence)) 
+   #     #integer encode the sequence
+   #     label_encoder = LabelEncoder()
+   #     integer_encoded_seq = label_encoder.fit_transform(sequence) 
+   #     #one hot the sequence
+   #     onehot_encoder = OneHotEncoder(sparse_output=False)
+   #     #reshape because that's what OneHotEncoder likes
+   #     integer_encoded_seq = integer_encoded_seq.reshape(len(integer_encoded_seq), 1)
+   #     onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
+   #     encoded_sequences.append(onehot_encoded_seq)
+
+    ##############################      ****** USING ONEHOTENCODER V2: ******     ##############################
+
+
+
+
+
     #ss
     # Create a DataFrame for the encoded sequences
     # encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0), columns=['sequence'])
@@ -135,13 +194,31 @@ def cat_encoding(ds):
 # TODO: Split following code sections in functions for readability, AND GIVE THEIR RESPECTIVE FUNCTION
 # the hyperparameters for easier usage of EA later.
 # ********************* IMPORTING DATA *******************
-with open(r'C:\Users\Windows\Documents\Education\Concordia\2023_Fall\COEN432_ML_&_EA\Assignmnet_2\0_data\A2_15000.txt', 'r') as file:
-    lines = file.readlines()
-data = [line.strip().split(';') for line in lines]
-columns = ['id', 'sequence', 'BPPM', 'activity_level']
-ds = pd.DataFrame(data, columns=columns)
+# gives the path of assignment2.py
+current_path = os.path.realpath(__file__)
+
+# gives the directory where assigment2.py exists
+dir = os.path.dirname(current_path) 
+
+#switches out Prediction-of-Ribozyme-Activity with 0_data in directory name
+new_dir = dir.replace('COEN432_ML','0_data')
+
+#change directory to directory with txt file
+os.chdir(new_dir)
+
+#open the file
+with open('A2_15000.txt', 'r') as file:
+    lines = file.readlines()    #reads the input file, stores it within 'lines'
+    
+#data holds the vector of lines 
+data = [line.strip().split(';') for line in lines]  #'line' holds each individual line after splitting by character ';'
+columns = ['id', 'sequence', 'BPPM', 'activity_level']  #creates heading for each feature
+ds = pd.DataFrame(data, columns=columns)    #stores table of 15000 instaces in 'ds'
+
 # Removing the ID column since it doesn't contain relevant information for our problem.
 ds.drop(columns='id', inplace=True)
+
+#print(ds)
 
 # ********************* PREPROCESSING ********************
 ds = cat_encoding(ds)
