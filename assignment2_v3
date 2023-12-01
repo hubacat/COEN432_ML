@@ -1,3 +1,4 @@
+import array
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -5,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 
 # # Loading, tabulating, and creating a DataFrame with all the data in the program.
@@ -41,27 +43,77 @@ def scatter_plotting(df):
 # Each category gets its own column and only one of these columns is 'hot' (set to 1).
 # This increase the dimension immensly, that's why we'll need to remove some nucelotides that dont affect the model's accuracy.
 def cat_encoding(ds):
-    # Encoding RNA sequences to binary vectors.
-    encoder = OneHotEncoder(sparse=False)
-    sequences = ds['sequence'].apply(list)  # Convert strings to lists of nucleotides
-    encoded_sequences = encoder.fit_transform(sequences.apply(lambda x: [[i] for i in x]))
-    # Create the dataset for encoded RNA sequences (anothe rone will be made for the BPPM).
-    encoded_sequence_ds = pd.DataFrame(encoded_sequences, columns=encoder.get_feature_names())
+    # # ****** USING ONEHOTENCODER: ******
+    # # Encoding RNA sequences to binary vectors.
+    # encoder = OneHotEncoder(sparse=False)
+    # # Convert String sequence to list of nucleotides.
+    # sequences = ds['sequence'].apply(list)  
+    # # Reshaping sequences into a 2D array for OneHotEncoding
+    # reshaped_sequences = sequences.apply(lambda x: [''.join(x)]).values.reshape(-1, 1)
+    # # Fit-transform the data and obtain encoded values
+    # encoded_sequences = encoder.fit_transform(reshaped_sequences)
+    # # Create the dataset for encoded RNA sequences (anothe rone will be made for the BPPM).
+    # encoded_sequence_ds = pd.DataFrame(encoded_sequences, columns=encoder.encoder.get_feature_names_out(input_features=['sequence']))
 
-    # Remove splitting characters and transform String sequence to list array of floats
-    ds['BPPM'] = ds['BPPM'].str.replace("[", "", regex=True).str.replace("]", "", regex=True).str.replace("'", "", regex=True).str.replace(" ", "", regex=True)
-    ds['BPPM'] = ds['BPPM'].apply(lambda x: np.array([float(val) for val in x.split(',')]))
+    # # Remove unecessary String characters and transforming String sequence to list array of floats
+    # ds['BPPM'] = ds['BPPM'].str.replace("[", "", regex=True).str.replace("]", "", regex=True).str.replace("'", "", regex=True).str.replace(" ", "", regex=True)
+    # ds['BPPM'] = ds['BPPM'].apply(lambda x: np.array([float(val) for val in x.split(',')]))
 
-    # Create the dataset for encoded BPPMS features.
-    bppm_ds = pd.DataFrame(ds['BPPM'].tolist(), columns=[f'BPPM_{i}' for i in range(60 * 60)])
+    # # Create the dataset for encoded BPPMS features.
+    # bppm_ds = pd.DataFrame(ds['BPPM'].tolist(), columns=[f'BPPM_{i}' for i in range(60 * 60)])
 
-# columns = ['id', 'sequence', 'BPPM', 'activity_level']
+    # # Concatenate and return the encoded sequence DataFrame with the BPPM matrix
+    # dataset = pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
+    # return dataset
 
-    # Concatenate and return the encoded sequence DataFrame with the BPPM matrix
-    return pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
 
-# TODO: CONCAT TARGET ASWEL ??
+    # # # ****** MANUALLY IMPLEMENTING: ******
+    # # Convert String sequence to list of nucleotides.
+    # sequences = ds['sequence'].apply(list)  
+    # nucleotide_mapping = {'A': '1000', 'C': '0100', 'G': '0010', 'U': '0001'}
+    
+    # # Iterate through each nucleotide in the sequence and create binary vectors
+    # binary_vectors = []
+    # for sequence in sequences:
+    #     binary_seq = ''
+    #     for nucleotide in sequence:
+    #         binary_seq += nucleotide_mapping.get(nucleotide, '0000')  # Assign '0000' for unknown nucleotides; this should never happen.
+    #     binary_vectors.append(list(binary_seq))
+    
+    # # Create a DataFrame for the binary vectors
+    # binary_df = pd.DataFrame(binary_vectors, columns=[f'{column_name}_bit_{i}' for i in range(len(binary_vectors[0]))])
+    
+    # # Concatenate the binary vectors DataFrame with the original DataFrame
+    # df = pd.concat([df, binary_df], axis=1)
+    
+    # return df
 
+    
+    # # # ****** USING ONEHOTENCODER V2: ******
+    sequences = ds['sequence']
+    encoded_sequences = []
+    iteration = 0
+    for sequence in sequences:
+        iteration += 1
+        print(iteration)
+        sequence = np.array(list(sequence)) 
+        #integer encode the sequence
+        label_encoder = LabelEncoder()
+        integer_encoded_seq = label_encoder.fit_transform(sequence) 
+        #one hot the sequence
+        onehot_encoder = OneHotEncoder(sparse_output=False)
+        #reshape because that's what OneHotEncoder likes
+        integer_encoded_seq = integer_encoded_seq.reshape(len(integer_encoded_seq), 1)
+        onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
+        encoded_sequences.append(onehot_encoded_seq)
+    #ss
+    # Create a DataFrame for the encoded sequences
+    # encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0), columns=['sequence'])
+    encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0))
+    # Concatenate the encoded sequences DataFrame with BPPM and target variable
+    new_ds = pd.concat([encoded_sequences_df, ds[['BPPM', 'activity_level']]], axis=1)
+    
+    return new_ds
 
     # # Concatenating the encoded sequences and BPPM features
     # processed_ds = pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
