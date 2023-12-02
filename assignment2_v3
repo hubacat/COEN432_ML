@@ -9,6 +9,8 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 
+import os
+
 # # Loading, tabulating, and creating a DataFrame with all the data in the program.
 # # TODO: Change filepath for easier implementation.
 # # with open('..\\A2_15000.txt', 'r') as file:
@@ -143,13 +145,42 @@ def cat_encoding(ds):
 # TODO: Split following code sections in functions for readability, AND GIVE THEIR RESPECTIVE FUNCTION
 # the hyperparameters for easier usage of EA later.
 # ********************* IMPORTING DATA *******************
-with open(r'C:\Users\Windows\Documents\Education\Concordia\2023_Fall\COEN432_ML_&_EA\Assignmnet_2\0_data\A2_15000.txt', 'r') as file:
-    lines = file.readlines()
-data = [line.strip().split(';') for line in lines]
-columns = ['id', 'sequence', 'BPPM', 'activity_level']
-ds = pd.DataFrame(data, columns=columns)
+
+
+#with open(r'C:\Users\Windows\Documents\Education\Concordia\2023_Fall\COEN432_ML_&_EA\Assignmnet_2\0_data\A2_15000.txt', 'r') as file:
+#    lines = file.readlines()
+#data = [line.strip().split(';') for line in lines]
+#columns = ['id', 'sequence', 'BPPM', 'activity_level']
+#ds = pd.DataFrame(data, columns=columns)
+# Removing the ID column since it doesn't contain relevant information for our problem.
+#ds.drop(columns='id', inplace=True)
+
+
+# gives the path of assignment2.py
+current_path = os.path.realpath(__file__)
+
+# gives the directory where assigment2.py exists
+dir = os.path.dirname(current_path) 
+
+#switches out Prediction-of-Ribozyme-Activity with 0_data in directory name
+new_dir = dir.replace('COEN432_ML','0_data')
+
+#change directory to directory with txt file
+os.chdir(new_dir)
+
+#open the file
+with open('A2_15000.txt', 'r') as file:
+    lines = file.readlines()    #reads the input file, stores it within 'lines'
+    
+#data holds the vector of lines 
+data = [line.strip().split(';') for line in lines]  #'line' holds each individual line after splitting by character ';'
+columns = ['id', 'sequence', 'BPPM', 'activity_level']  #creates heading for each feature
+ds = pd.DataFrame(data, columns=columns)    #stores table of 15000 instaces in 'ds'
+
 # Removing the ID column since it doesn't contain relevant information for our problem.
 ds.drop(columns='id', inplace=True)
+
+
 
 # ********************* PREPROCESSING ********************
 ds = cat_encoding(ds)
