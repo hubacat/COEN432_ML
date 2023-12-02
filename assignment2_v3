@@ -93,6 +93,17 @@ def cat_encoding(ds):
     # Optionally, drop the 'sequence' column from the concatenated DataFrame
     ds.drop('sequence', axis=1, inplace=True)
     ds.columns = ds.columns.astype(str)
+
+#---------------------------------------------------------------
+#TODO: ARRIVED HERE (this has to be transformed to float for Scalling to work):
+    # # Remove unecessary String characters and transforming String sequence to list array of floats
+    ds['BPPM'] = ds['BPPM'].str.replace("[", "", regex=True).str.replace("]", "", regex=True).str.replace("'", "", regex=True).str.replace(" ", "", regex=True)
+    ds['BPPM'] = ds['BPPM'].apply(lambda x: np.array([float(val) for val in x.split(',')]))
+
+    # Create the dataset for encoded BPPMS features.
+    bppm_ds = pd.DataFrame(ds['BPPM'].tolist(), columns=[f'BPPM_{i}' for i in range(60 * 60)])
+#---------------------------------------------------------------    
+
     return ds
 
     
