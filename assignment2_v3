@@ -9,6 +9,10 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
 
+import os
+
+from ast import literal_eval
+
 # # Loading, tabulating, and creating a DataFrame with all the data in the program.
 # # TODO: Change filepath for easier implementation.
 # # with open('..\\A2_15000.txt', 'r') as file:
@@ -67,63 +71,83 @@ def cat_encoding(ds):
     # return dataset
 
 
-    # # # ****** MANUALLY IMPLEMENTING: ******
-    # # Convert String sequence to list of nucleotides.
-    # sequences = ds['sequence'].apply(list)  
-    # nucleotide_mapping = {'A': '1000', 'C': '0100', 'G': '0010', 'U': '0001'}
-    
-    # # Iterate through each nucleotide in the sequence and create binary vectors
-    # binary_vectors = []
-    # for sequence in sequences:
-    #     binary_seq = ''
-    #     for nucleotide in sequence:
-    #         binary_seq += nucleotide_mapping.get(nucleotide, '0000')  # Assign '0000' for unknown nucleotides; this should never happen.
-    #     binary_vectors.append(list(binary_seq))
-    
-    # # Create a DataFrame for the binary vectors
-    # binary_df = pd.DataFrame(binary_vectors, columns=[f'{column_name}_bit_{i}' for i in range(len(binary_vectors[0]))])
-    
-    # # Concatenate the binary vectors DataFrame with the original DataFrame
-    # df = pd.concat([df, binary_df], axis=1)
-    
-    # return df
+    # # ****** MANUALLY IMPLEMENTING: ******
+    # Convert String sequence to list of nucleotides.
+    sequences = ds['sequence'].apply(list)  
+    nucleotide_mapping = {'A': '1000', 'C': '0100', 'G': '0010', 'U': '0001'}
 
-    
-    # # # ****** USING ONEHOTENCODER V2: ******
-    sequences = ds['sequence']
-    encoded_sequences = []
-    iteration = 0
+    # Iterate through each nucleotide in the sequence and create binary vectors
+    binary_vectors = []
     for sequence in sequences:
-        iteration += 1
-        print(iteration)
-        sequence = np.array(list(sequence)) 
-        #integer encode the sequence
-        label_encoder = LabelEncoder()
-        integer_encoded_seq = label_encoder.fit_transform(sequence) 
-        #one hot the sequence
-        onehot_encoder = OneHotEncoder(sparse_output=False)
-        #reshape because that's what OneHotEncoder likes
-        integer_encoded_seq = integer_encoded_seq.reshape(len(integer_encoded_seq), 1)
-        onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
-        encoded_sequences.append(onehot_encoded_seq)
-    #ss
-    # Create a DataFrame for the encoded sequences
-    # encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0), columns=['sequence'])
-    encoded_sequences_df = pd.DataFrame(np.concatenate(encoded_sequences, axis=0))
-    # Concatenate the encoded sequences DataFrame with BPPM and target variable
-    new_ds = pd.concat([encoded_sequences_df, ds[['BPPM', 'activity_level']]], axis=1)
+        binary_seq = ''
+        for nucleotide in sequence:
+            binary_seq += nucleotide_mapping.get(nucleotide, '0000')  # Assign '0000' for unknown nucleotides; this should never happen.
+        binary_vectors.append(list(binary_seq))
     
-    return new_ds
+    # Create a DataFrame for the binary vectors
+    encoded_ds = pd.DataFrame(binary_vectors)
+    
+    # Reset the index to match the ds DataFrame before concatenating
+    encoded_ds.reset_index(drop=True, inplace=True)
+    ds.reset_index(drop=True, inplace=True)
 
-    # # Concatenating the encoded sequences and BPPM features
-    # processed_ds = pd.concat([encoded_sequence_ds, bppm_ds], axis=1)
+    # Concatenate the binary vectors DataFrame with the original DataFrame
+    ds = pd.concat([ds, encoded_ds], axis=1)
 
-    # # Target variable
-    # target = ds['Target']
+    # Optionally, drop the 'sequence' column from the concatenated DataFrame
+    ds.drop('sequence', axis=1, inplace=True)
+    ds.columns = ds.columns.astype(str)
 
-    # # Splitting into train and test sets
-    # X_train, X_test, y_train, y_test = train_test_split(processed_ds, target, test_size=0.2, random_state=42)
+    #print(sequences)
+    #print(ds['BPPM'])
+   # print(ds)
+#---------------------------------------------------------------
+#TODO: ARRIVED HERE (this has to be transformed to float for Scalling to work):
+    # # Remove unecessary String characters and transforming String sequence to list array of floats
+   
+    #Try1: ds['BPPM'] = ds['BPPM'].replace(',','', regex = True)
+    #ds['BPPM'] = ds['BPPM'].astype(float)
 
+    ds['BPPM'] = ds['BPPM'].apply(literal_eval)
+    ds['BPPM'] = ds['BPPM'].apply(lambda x: [float(i) for i in x])
+
+    print(ds['BPPM'])
+    #ds['BPPM'] = ds['BPPM'].str.replace("[", "", regex=True).str.replace("]", "", regex=True).str.replace("'", "", regex=True).str.replace(" ", "", regex=True)
+    #ds['BPPM'] = ds['BPPM'].apply(lambda x: np.array([float(val) for val in x.split(',')]))
+
+    # Create the dataset for encoded BPPMS features.
+    bppm_ds = pd.DataFrame(ds['BPPM'].tolist(), columns=[f'BPPM_{i}' for i in range(60 * 60)])
+    print(bppm_ds)
+#---------------------------------------------------------------    
+
+    return ds
+
+    
+    # # # # ****** USING ONEHOTENCODER V2: ******
+    # sequences = ds['sequence'].astype(str)
+    # onehot_encoder = OneHotEncoder(sparse_output=False)
+    # #integer encode the sequence
+    # label_encoder = LabelEncoder()
+    # encoded_sequences = []
+    # iteration = 0
+    # for sequence in sequences:
+    #     iteration += 1
+    #     print(iteration)
+    #     sequence = np.array(list(sequence))
+    #     integer_encoded_seq = label_encoder.fit_transform(sequence) 
+    #     #reshape because that's what OneHotEncoder likes
+    #     integer_encoded_seq = integer_encoded_seq.reshape(-1, 1)
+    #     onehot_encoded_seq = onehot_encoder.fit_transform(integer_encoded_seq)
+    #     onehot_encoded_seq(np.array(onehot_encoded_seq).T)
+        
+    # # Create a DataFrame for the encoded sequences
+    # encoded_sequences = np.array(encoded_sequences).T
+    # encoded_sequences_ds = pd.DataFrame(encoded_sequences)
+    # print(encoded_sequences_ds.shape)
+    # # Concatenate the encoded sequences DataFrame with BPPM and target variable
+    # new_ds = pd.concat([encoded_sequences_ds, ds[['BPPM', 'activity_level']]], axis=1)
+    
+    # return new_ds
 
 # def outliers_handling():
 
@@ -135,21 +159,52 @@ def cat_encoding(ds):
 # TODO: Split following code sections in functions for readability, AND GIVE THEIR RESPECTIVE FUNCTION
 # the hyperparameters for easier usage of EA later.
 # ********************* IMPORTING DATA *******************
-with open(r'C:\Users\Windows\Documents\Education\Concordia\2023_Fall\COEN432_ML_&_EA\Assignmnet_2\0_data\A2_15000.txt', 'r') as file:
-    lines = file.readlines()
-data = [line.strip().split(';') for line in lines]
-columns = ['id', 'sequence', 'BPPM', 'activity_level']
-ds = pd.DataFrame(data, columns=columns)
+
+
+#with open(r'C:\Users\Windows\Documents\Education\Concordia\2023_Fall\COEN432_ML_&_EA\Assignmnet_2\0_data\A2_15000.txt', 'r') as file:
+#    lines = file.readlines()
+#data = [line.strip().split(';') for line in lines]
+#columns = ['id', 'sequence', 'BPPM', 'activity_level']
+#ds = pd.DataFrame(data, columns=columns)
+# Removing the ID column since it doesn't contain relevant information for our problem.
+#ds.drop(columns='id', inplace=True)
+
+
+# gives the path of assignment2.py
+current_path = os.path.realpath(__file__)
+
+# gives the directory where assigment2.py exists
+dir = os.path.dirname(current_path) 
+
+#switches out Prediction-of-Ribozyme-Activity with 0_data in directory name
+new_dir = dir.replace('COEN432_ML','0_data')
+
+#change directory to directory with txt file
+os.chdir(new_dir)
+
+#open the file
+with open('A2_15000.txt', 'r') as file:
+    lines = file.readlines()    #reads the input file, stores it within 'lines'
+    
+#data holds the vector of lines 
+data = [line.strip().split(';') for line in lines]  #'line' holds each individual line after splitting by character ';'
+columns = ['id', 'sequence', 'BPPM', 'activity_level']  #creates heading for each feature
+ds = pd.DataFrame(data, columns=columns)    #stores table of 15000 instaces in 'ds'
+
 # Removing the ID column since it doesn't contain relevant information for our problem.
 ds.drop(columns='id', inplace=True)
+
+print(ds)
 
 # ********************* PREPROCESSING ********************
 ds = cat_encoding(ds)
 
 # ********************* SPLITTING **********************
 # Split features and target.
-X = ds[['sequence', 'BPPM']]
-y = ds['activity_level']
+# Select all columns except the last one as features, since following cthe categorical encoding the column name of the all 
+# the features isn't only 'sequence'.
+X = ds.iloc[:, :-1]  
+y = ds.iloc[:, -1]  
 # Splitting the data into training and testing sets.
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
