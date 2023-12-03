@@ -168,6 +168,6 @@ def main(n_neighbors):
 
 n_neighbors = 1
 test_size = 0.01
-while n_neighbors < 0.5:
+while n_neighbors < 10:
     main(n_neighbors)
-    n_neighbors+=0.02
+    n_neighbors+=0.1
