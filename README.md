@@ -10,8 +10,8 @@
 ### Installation: 
   * Python
     * Windows: https://www.python.org/downloads/windows/
-    * MacOS: brew install python (Homebrew must be installed)
-
+    * MacOS: (Homebrew must be installed)
+      * brew install python
   * Scipy: https://scipy.org/install/
 
   * scikit-learn: 
