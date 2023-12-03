@@ -3,8 +3,8 @@
 ## Assignment 2 Final Project
 
 ### Requirements: 
-    * python3 
-    * scipy 
+    * Python 
+    * Scipy 
     * sklearn
 
 ### Installation: 
