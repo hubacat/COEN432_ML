@@ -2,19 +2,19 @@
 
 ## Assignment 2 Final Project
 
-Requirements: 
+### Requirements: 
     * python3 
     * scipy 
     * sklearn
 
-Installation: 
-    * Python
-        * Windows: https://www.python.org/downloads/windows/
-        * MacOS: brew install python (Homebrew must be installed)
+### Installation: 
+  * Python
+    * Windows: https://www.python.org/downloads/windows/
+    * MacOS: brew install python (Homebrew must be installed)
 
-    * Scipy: https://scipy.org/install/
+  * Scipy: https://scipy.org/install/
 
-    * scikit-learn: 
+  * scikit-learn: 
         * Windows: https://scikit-learn.org/stable/install.html
         * MacOS: 
             * pip3 install --upgrade pip
