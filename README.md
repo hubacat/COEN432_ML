@@ -2,7 +2,7 @@
 
 Assignment 2 Final Project
 
-Requirements: 
+*Requirements: 
     *python3 
     *scipy 
     *sklearn
