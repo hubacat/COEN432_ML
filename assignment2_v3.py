@@ -1,3 +1,8 @@
+#Assignment2-COEN432
+#Julian Aloise, 40177178
+#Andrei Costea, 40127496
+#Depending on the name of the input.txt file, must update line 81 with the new name of the input file
+
 import os
 import time
 import matplotlib.pyplot as plt
@@ -65,7 +70,7 @@ def main(n_neighbors):
 
     current_path = os.path.realpath(__file__) # gives the path of assignment2_v3.py
 
-    dir = os.path.dirname(current_path) # gives the directory where assigment2.py exists
+    dir = os.path.dirname(current_path) # gives the directory where assigment2_V3.py exists
 
     new_dir = dir.replace('COEN432_ML','0_data') # switches out COEN432_ML with 0_data in directory name
 
@@ -84,9 +89,6 @@ def main(n_neighbors):
     # ********************* PREPROCESSING ********************
     print('Pre-processing ...')
     ds = cat_encoding(ds)
-    # def dim_reduction():
-    # def outliers_handling():
-    # def gaussian_noise():
    
     # ********************* SPLITTING **********************
     print('Splitting data ...')
@@ -111,19 +113,14 @@ def main(n_neighbors):
     # ********************* TRAINING ***********************
     print('Model training...')
     # Initializing the KNN model.
-    # Test 1: Using default values for the KNeighborsClassifier Constructor (these are part of hyperparametization which will be used in EA).
-    # n_neighbors   =5;
-    # weight        ='uniform'
-    # algorithm     ='auto'
-    # p             =1          (Manhattan distance, p=2 is Euclidean distance)
-    # n_jobs        =none          (# of parallel jobs to run for neighbors search; -1 means using all processors
+
     knn = KNeighborsClassifier(n_neighbors=n_neighbors, weights='uniform', algorithm='auto', p=1, n_jobs=None)
     knn.fit(X_train_scaled,y_train)
 
     # ********************* TESTING ***********************
     print('Model testing...')
     # Predicting on the independent test dataset.
-    #y_pred = knn.predict(X_test)###################X_test_scaled#####################################################
+    
     y_pred = knn.predict(X_test_scaled)
     
     # ********************* EVALUATING ***********************
