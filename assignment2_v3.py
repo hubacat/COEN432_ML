@@ -97,16 +97,17 @@ def main(n_neighbors):
     y = ds.iloc[:, -1]  
     # Splitting the data into training and testing sets.
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+   
     # ********************* SCALLING ***********************
-    # print('Data scalling...')
-    # # Feature scaling based on the reliance of KNN on distance metrics.
-    # # Scalling takes place after splitting the data to make sure trainning data isnt leaked in testing data.
-    # # For this we remove the mean value from each instances respective feature.
-    # # Target not scalled, since it might affect its the interpretability, and nature.
-    # scaler = StandardScaler()
-    # X_train_scaled = scaler.fit_transform(X_train)
-    # X_test_scaled = scaler.transform(X_test)
-    
+    print('Data scalling...')
+    #Feature scaling based on the reliance of KNN on distance metrics.
+    #Scalling takes place after splitting the data to make sure trainning data isnt leaked in testing data.
+    #For this we remove the mean value from each instances respective feature.
+    #Target not scalled, since it might affect its the interpretability, and nature.
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
+
     # ********************* TRAINING ***********************
     print('Model training...')
     # Initializing the KNN model.
@@ -117,12 +118,13 @@ def main(n_neighbors):
     # p             =1          (Manhattan distance, p=2 is Euclidean distance)
     # n_jobs        =none          (# of parallel jobs to run for neighbors search; -1 means using all processors
     knn = KNeighborsClassifier(n_neighbors=n_neighbors, weights='uniform', algorithm='auto', p=1, n_jobs=None)
-    knn.fit(X_train, y_train)#######ONLY TRAIN TO X_train_scaled#################################################################
-    
+    knn.fit(X_train_scaled,y_train)
+
     # ********************* TESTING ***********************
     print('Model testing...')
     # Predicting on the independent test dataset.
-    y_pred = knn.predict(X_test)###################X_test_scaled#####################################################
+    #y_pred = knn.predict(X_test)###################X_test_scaled#####################################################
+    y_pred = knn.predict(X_test_scaled)
     
     # ********************* EVALUATING ***********************
     print('Model evaluating...')
